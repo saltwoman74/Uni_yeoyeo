@@ -1,0 +1,5 @@
+{
+  "name": "Scroll-Driven Video Player",
+  "description": "An advanced video player that scrubs through frames based on the user's scroll position, built with performance optimizations like decoupled event handling and a guarded render loop.",
+  "requestFramePermissions": []
+}
