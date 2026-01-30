@@ -101,12 +101,34 @@ export default function LandingPage({ scrollRef, scrollDuration }: LandingPagePr
         muted
         playsInline
       />
+
+      {/* Scroll Overlay Content (Title) */}
       <div
         className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 transition-opacity duration-1000 pointer-events-none"
         style={{ opacity: 1 - scrollProgress * 2 }}
       >
         <h1 className="text-6xl sm:text-8xl font-black text-white tracking-tight mb-3" style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '0.05em' }}>UNI_CITY</h1>
         <p className="text-3xl sm:text-4xl text-white/95 font-normal" style={{ fontFamily: 'Pretendard, sans-serif' }}>여여부동산</p>
+      </div>
+
+      {/* Scroll Indicator - Bouncing Arrow (Persists until header appears) */}
+      <div
+        className="absolute bottom-20 left-0 right-0 flex flex-col items-center animate-bounce pointer-events-none transition-opacity duration-500"
+        style={{ opacity: scrollProgress > 0.9 ? 0 : 0.8 }}
+      >
+        <span className="text-white text-lg font-bold mb-2 tracking-widest drop-shadow-md">위로 스크롤 10회</span>
+        {/* Arrow pointing UP */}
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white drop-shadow-md rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        </svg>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="absolute bottom-0 left-0 w-full h-1.5 bg-zinc-200/20 z-30">
+        <div
+          className="h-full bg-[#D4AF37] transition-all duration-100 ease-out shadow-[0_0_10px_rgba(212,175,55,0.5)]"
+          style={{ width: `${scrollProgress * 100}%` }}
+        />
       </div>
     </div>
   );
