@@ -95,7 +95,7 @@ export default function LandingPage({ scrollRef, scrollDuration }: LandingPagePr
 
       <video
         ref={videoRef}
-        src="https://mporxvovpeqocpcogdpo.supabase.co/storage/v1/object/public/3video/3456.webm"
+        src="/3456.webm"
         className={`h-full w-full object-contain bg-white scale-125 ${!videoLoaded ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}
         preload="auto"
         muted
