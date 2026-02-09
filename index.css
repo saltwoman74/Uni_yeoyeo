@@ -352,3 +352,70 @@ h6 {
   line-clamp: 3;
   overflow: hidden;
 }
+
+/* ===== Popup Modal ===== */
+.popup-overlay {
+  background-color: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
+  transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+.popup-entering {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.popup-closing {
+  background-color: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
+}
+
+.popup-card-entering {
+  animation: popupSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.popup-card-closing {
+  animation: popupSlideOut 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes popupSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-40px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes popupSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.97);
+  }
+}
+
+/* Popup thin scrollbar */
+.popup-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.popup-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.popup-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+.popup-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
