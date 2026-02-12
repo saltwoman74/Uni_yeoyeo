@@ -36,12 +36,16 @@ export async function fetchListingsFromGoogleSheet(): Promise<Listing[]> {
             const values = parseCSVLine(line);
 
             if (values.length >= 11) {
+                // 평타입(index 6)을 우선 사용, 없으면 공급(index 4) 사용
+                // '평' 접미사 제거: "30평" → "30", "35평A타입" → "35A타입"
+                const rawSize = (values[6] || values[4] || '').replace('평', '');
+
                 listings.push({
                     complex: values[0] || '',      // 단지명
                     unit: values[1] || '',          // 동
-                    type: values[2] || '',          // 종류
+                    type: values[2] || '',          // 종류 (매매/전세/월세)
                     price: values[3] || '',         // 가격
-                    size: values[4] || '',          // 평형
+                    size: rawSize,                  // 평형 ('25', '30', '35A타입' 등)
                     features: values[9] || '',      // 매물특징
                     category: 'unicity'             // 모두 유니시티
                 });
