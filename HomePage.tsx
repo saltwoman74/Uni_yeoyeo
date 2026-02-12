@@ -87,6 +87,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [isSheetDataLoaded, setIsSheetDataLoaded] = useState(false);
 
   // 단지별 평형 옵션
   const getSizeOptions = () => {
@@ -172,9 +173,11 @@ export default function HomePage() {
       const listings = await fetchListingsFromGoogleSheet();
       if (listings.length > 0) {
         setListingsData(listings);
+        setIsSheetDataLoaded(true);
       }
     } catch (error) {
       console.error('Listings data load error:', error);
+      setIsSheetDataLoaded(false);
     }
   };
 
@@ -270,6 +273,8 @@ export default function HomePage() {
                 onSearch={setSearchQuery}
                 listings={listingsData}
                 placeholder="매물종류(매매,전세,월세).단지.평형(타입)"
+                noResults={searchQuery.trim() !== '' && filteredListings.length === 0}
+                searchQuery={searchQuery}
               />
             </div>
           </div>
@@ -318,6 +323,18 @@ export default function HomePage() {
                     ))}
                   </select>
                 </div>
+                <button
+                  onClick={() => {
+                    // 현재 선택된 필터로 검색 (이미 자동 필터링되므로 스크롤만 이동)
+                    document.getElementById('listings-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
+                  className="px-5 py-2 bg-[#0F172A] text-white text-sm font-semibold rounded-lg hover:bg-black transition-colors flex items-center gap-1.5 shrink-0"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                  </svg>
+                  검색
+                </button>
               </div>
               <div className="flex items-center gap-2">
                 <label htmlFor="sort" className="text-sm text-zinc-600">정렬:</label>
@@ -336,48 +353,77 @@ export default function HomePage() {
               </div>
             </div>
             {/* Premium Listings 섹션 수정 부분 */}
-            <div className="mt-8">
-              {/* 1단(기본), 2단(md:768px), 3단(lg:1024px) 반응형 그리드 */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-                {filteredListings.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-white border border-zinc-200 rounded-lg p-3 hover:shadow-lg cursor-pointer transition-all hover:-translate-y-1 group text-sm"
-                    onClick={() => setSelectedListing(item)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setSelectedListing(item);
-                      }
-                    }}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-bold text-sm text-zinc-900">{item.complex}</h3>
-                        <p className="text-xs text-zinc-600 mt-0.5">{item.unit}</p>
-                      </div>
-                      <span className="px-2 py-0.5 bg-[#D4AF37] text-white text-xs font-semibold rounded-full">{item.type}</span>
-                    </div>
-
-                    <div className="space-y-1 mb-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-zinc-600">평형</span>
-                        <span className="font-semibold text-xs text-zinc-900">{item.size}평</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-zinc-600">가격</span>
-                        <span className="font-bold text-sm text-zinc-900 group-hover:text-blue-600 transition-colors">{item.price}</span>
-                      </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-zinc-200">
-                      <p className="text-xs text-zinc-700 line-clamp-2">{item.features}</p>
-                    </div>
+            <div id="listings-grid" className="mt-8">
+              {filteredListings.length === 0 ? (
+                <div className="bg-white border border-zinc-200 rounded-xl p-8 sm:p-12 text-center">
+                  <div className="text-4xl mb-4">🔍</div>
+                  <h3 className="text-lg font-bold text-zinc-800 mb-2">검색 결과가 없습니다</h3>
+                  <div className="text-sm text-zinc-500 space-y-1 mb-4">
+                    <p>현재 검색 조건:</p>
+                    <p className="font-medium text-zinc-700">
+                      {propertyType} · {complex} · {size}평
+                      {searchQuery && <> · 검색어: "{searchQuery}"</>}
+                    </p>
                   </div>
-                ))}
-              </div>
+                  <div className="text-sm text-zinc-500 space-y-1">
+                    {searchQuery ? (
+                      <p>입력하신 검색어 <span className="font-semibold text-zinc-700">"{searchQuery}"</span>에 해당하는 매물이 없습니다.<br />다른 키워드로 검색하거나 검색어를 지워보세요.</p>
+                    ) : (
+                      <p>선택하신 <span className="font-semibold text-zinc-700">{propertyType} · {complex} · {size}평</span> 조건에<br />등록된 매물이 없습니다. 다른 조건을 선택해 보세요.</p>
+                    )}
+                    {!isSheetDataLoaded && (
+                      <p className="mt-3 text-xs text-amber-600 bg-amber-50 inline-block px-3 py-1.5 rounded-full">
+                        ⚠️ 현재 매물 데이터를 불러오는 중이거나 연결에 문제가 있을 수 있습니다.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-zinc-500 mb-3">총 <span className="font-bold text-zinc-800">{filteredListings.length}</span>건의 매물이 있습니다.</p>
+                  {/* 1단(기본), 2단(md:768px), 3단(lg:1024px) 반응형 그리드 */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+                    {filteredListings.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white border border-zinc-200 rounded-lg p-3 hover:shadow-lg cursor-pointer transition-all hover:-translate-y-1 group text-sm"
+                        onClick={() => setSelectedListing(item)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setSelectedListing(item);
+                          }
+                        }}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h3 className="font-bold text-sm text-zinc-900">{item.complex}</h3>
+                            <p className="text-xs text-zinc-600 mt-0.5">{item.unit}</p>
+                          </div>
+                          <span className="px-2 py-0.5 bg-[#D4AF37] text-white text-xs font-semibold rounded-full">{item.type}</span>
+                        </div>
+
+                        <div className="space-y-1 mb-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-zinc-600">평형</span>
+                            <span className="font-semibold text-xs text-zinc-900">{item.size}평</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-zinc-600">가격</span>
+                            <span className="font-bold text-sm text-zinc-900 group-hover:text-blue-600 transition-colors">{item.price}</span>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-zinc-200">
+                          <p className="text-xs text-zinc-700 line-clamp-2">{item.features}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </section>

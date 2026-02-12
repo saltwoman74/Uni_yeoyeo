@@ -7,9 +7,11 @@ interface SearchBarProps {
     listings: Listing[];
     placeholder?: string;
     className?: string;
+    noResults?: boolean;
+    searchQuery?: string;
 }
 
-export default function SearchBar({ onSearch, listings, placeholder = '매물종류(매매,전세,월세).단지.평형(타입)', className = '' }: SearchBarProps) {
+export default function SearchBar({ onSearch, listings, placeholder = '매물종류(매매,전세,월세).단지.평형(타입)', className = '', noResults = false, searchQuery = '' }: SearchBarProps) {
     const [query, setQuery] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -100,6 +102,16 @@ export default function SearchBar({ onSearch, listings, placeholder = '매물종
                 단지명, 동, 가격, 방향, 특징(예: 공원뷰, 남향, 에어컨) 등으로 검색하면<br />
                 아래 매물 카드에 결과가 표시됩니다.
             </p>
+
+            {noResults && searchQuery && (
+                <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+                    <p className="font-semibold">🔍 검색 결과가 없습니다</p>
+                    <p className="mt-1 text-amber-700">
+                        "{searchQuery}"에 해당하는 매물을 찾을 수 없습니다.<br />
+                        다른 키워드로 검색하거나, 아래 필터에서 조건을 변경해 보세요.
+                    </p>
+                </div>
+            )}
 
             {showSuggestions && displayItems.length > 0 && (
                 <div

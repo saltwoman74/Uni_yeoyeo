@@ -1,6 +1,5 @@
 // Google Sheets Integration for Listings Data
-
-const SHEET_ID = import.meta.env.VITE_GOOGLE_SHEET_ID;
+// SHEET_ID는 api/sheets.js (Vercel Serverless Function)에서 관리합니다.
 
 export interface Listing {
     type: string;
@@ -14,10 +13,14 @@ export interface Listing {
 
 export async function fetchListingsFromGoogleSheet(): Promise<Listing[]> {
     try {
-        // Google Sheets를 CSV로 export하는 공개 URL
-        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+        // Vercel Serverless Proxy를 통해 Google Sheets CSV 데이터를 가져옴
+        // (브라우저에서 Google Sheets 직접 호출 시 CORS 차단 문제 해결)
+        const response = await fetch('/api/sheets');
 
-        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`API responded with status: ${response.status}`);
+        }
+
         const csvText = await response.text();
 
         // CSV 파싱
