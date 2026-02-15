@@ -1,5 +1,6 @@
-// Google Sheets Integration for Listings Data
-// SHEET_ID는 api/sheets.js (Vercel Serverless Function)에서 관리합니다.
+// Google Sheets Integration for Listings Data (v2 - with backup fallback)
+// 서버: api/sheets.js (3중 방어)
+// 클라이언트: 추가 백업 폴백
 
 export interface Listing {
     type: string;
@@ -13,8 +14,7 @@ export interface Listing {
 
 export async function fetchListingsFromGoogleSheet(): Promise<Listing[]> {
     try {
-        // Vercel Serverless Proxy를 통해 Google Sheets CSV 데이터를 가져옴
-        // (브라우저에서 Google Sheets 직접 호출 시 CORS 차단 문제 해결)
+        // 1차: Vercel Serverless Proxy (이미 내부에서 3중 방어 적용)
         const response = await fetch('/api/sheets');
 
         if (!response.ok) {
@@ -23,41 +23,81 @@ export async function fetchListingsFromGoogleSheet(): Promise<Listing[]> {
 
         const csvText = await response.text();
 
-        // CSV 파싱
-        const lines = csvText.split('\n');
-        const listings: Listing[] = [];
-
-        // 첫 번째 줄은 헤더이므로 건너뛰기
-        for (let i = 1; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (!line) continue;
-
-            // CSV 파싱 (쉼표로 구분, 따옴표 처리)
-            const values = parseCSVLine(line);
-
-            if (values.length >= 11) {
-                // 평타입(index 6)을 우선 사용, 없으면 공급(index 4) 사용
-                // '평' 접미사 제거: "30평" → "30", "35평A타입" → "35A타입"
-                const rawSize = (values[6] || values[4] || '').replace('평', '');
-
-                listings.push({
-                    complex: values[0] || '',      // 단지명
-                    unit: values[1] || '',          // 동
-                    type: values[2] || '',          // 종류 (매매/전세/월세)
-                    price: values[3] || '',         // 가격
-                    size: rawSize,                  // 평형 ('25', '30', '35A타입' 등)
-                    features: values[9] || '',      // 매물특징
-                    category: 'unicity'             // 모두 유니시티
-                });
-            }
+        // 응답이 CSV인지 검증 (HTML이면 백업으로 폴백)
+        if (csvText.includes('<!DOCTYPE') || csvText.includes('<html')) {
+            console.warn('API returned HTML instead of CSV, falling back to backup');
+            return await fetchFromBackup();
         }
 
-        return listings;
+        const listings = parseCSV(csvText);
+
+        if (listings.length > 0) {
+            return listings;
+        }
+
+        // 파싱 결과가 0건이면 백업 시도
+        console.warn('CSV parsing returned 0 listings, falling back to backup');
+        return await fetchFromBackup();
+
     } catch (error) {
         console.error('Google Sheets fetch error:', error);
-        // 에러 시 기본 데이터 반환
-        return getDefaultListings();
+        // 2차: 정적 백업 JSON
+        return await fetchFromBackup();
     }
+}
+
+// CSV 텍스트 → Listing[] 변환
+function parseCSV(csvText: string): Listing[] {
+    const lines = csvText.split('\n');
+    const listings: Listing[] = [];
+
+    // 첫 번째 줄은 헤더이므로 건너뛰기
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        const values = parseCSVLine(line);
+
+        if (values.length >= 11) {
+            // 평타입(index 7) 우선, 없으면 공급(index 5) 사용
+            // index가 1부터 시작 (첫 번째 열이 빈 열)
+            const rawSize = (values[7] || values[5] || '').replace('평', '');
+            const complex = values[1] || '';
+            const type = values[3] || '';
+
+            // 빈 데이터 필터링
+            if (!complex || !type) continue;
+
+            listings.push({
+                complex,
+                unit: values[2] || '',
+                type,
+                price: values[4] || '',
+                size: rawSize,
+                features: values[10] || '',
+                category: 'unicity'
+            });
+        }
+    }
+
+    return listings;
+}
+
+// 정적 백업 JSON에서 로드
+async function fetchFromBackup(): Promise<Listing[]> {
+    try {
+        const response = await fetch('/listings-backup.json');
+        if (response.ok) {
+            const listings: Listing[] = await response.json();
+            console.info(`Loaded ${listings.length} listings from backup JSON`);
+            return listings;
+        }
+    } catch (err) {
+        console.error('Backup JSON fetch failed:', err);
+    }
+
+    // 최후: 하드코딩 기본 데이터
+    return getDefaultListings();
 }
 
 // CSV 라인 파싱 (따옴표 처리)
@@ -83,13 +123,13 @@ function parseCSVLine(line: string): string[] {
     return result;
 }
 
-// 기본 매물 데이터
+// 기본 매물 데이터 (하드코딩 최후수단)
 function getDefaultListings(): Listing[] {
     return [
-        { type: '아파트', complex: '유니시티 4단지', size: '35평', unit: '405동 고층', price: '8억 5,000', features: '남향, 공원뷰, 풀옵션', category: 'unicity' },
-        { type: '아파트', complex: '유니시티 3단지', size: '41평', unit: '301동 중층', price: '10억 2,000', features: '코너, 조망 우수, 올수리', category: 'unicity' },
-        { type: '아파트', complex: '유니시티 1단지', size: '30평', unit: '110동 로얄층', price: '7억 8,000', features: '역세권, 채광 좋음', category: 'unicity' },
-        { type: '상가', complex: '유니시티 어반브릭스', size: '15평', unit: '1층 코너', price: '5,000/250', features: '유동인구 많음', category: 'all' },
-        { type: '오피스텔', complex: '힐스테이트 에비뉴', size: '25평', unit: 'A동 15층', price: '3억 2,000', features: '풀퍼니시드, 업무 최적', category: 'all' },
+        { type: '매매', complex: '창원중동유니시티1단지', size: '30', unit: '104동 고/32층', price: '8억 5,000', features: '남향 공원뷰 풀옵션', category: 'unicity' },
+        { type: '매매', complex: '창원중동유니시티3단지', size: '41', unit: '301동 중/30층', price: '10억 2,000', features: '코너 조망 우수 올수리', category: 'unicity' },
+        { type: '매매', complex: '창원중동유니시티1단지', size: '30', unit: '110동 중/32층', price: '7억 8,000', features: '역세권 채광 좋음', category: 'unicity' },
+        { type: '전세', complex: '창원중동유니시티4단지', size: '35A타입', unit: '405동 고/35층', price: '5억 5,000', features: '남향 시스템에어컨', category: 'unicity' },
+        { type: '월세', complex: '창원중동유니시티2단지', size: '35B타입', unit: '203동 중/42층', price: '2억/150', features: '에어컨 전체 중문', category: 'unicity' },
     ];
 }
