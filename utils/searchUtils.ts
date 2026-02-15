@@ -64,12 +64,14 @@ export interface Listing {
 export function searchListings(listings: Listing[], query: string): Listing[] {
     if (!query.trim()) return listings;
 
+    // 띄어쓰기로 나눠 각 단어를 AND 조건으로 검색
+    const terms = query.trim().split(/\s+/).filter(t => t.length > 0);
+
     return listings.filter(listing => {
-        return (
-            matchesSearch(listing.complex, query) ||
-            matchesSearch(listing.type, query) ||
-            matchesSearch(listing.size, query) ||
-            matchesSearch(listing.features, query)
+        const allFields = [listing.complex, listing.type, listing.size, listing.features, listing.unit, listing.price];
+        // 모든 검색어가 필드 중 하나에라도 매칭되어야 함
+        return terms.every(term =>
+            allFields.some(field => matchesSearch(field, term))
         );
     });
 }
