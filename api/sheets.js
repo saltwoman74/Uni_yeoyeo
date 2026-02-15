@@ -121,16 +121,22 @@ async function fetchViaApiV4() {
         throw new Error('No data returned from API v4');
     }
 
-    // 2D array → CSV 변환
-    return rows.map(row =>
-        row.map(cell => {
+    // 2D array → CSV 변환 (모든 행을 헤더 길이에 맞춤)
+    const headerLen = rows[0].length;
+    return rows.map(row => {
+        // API v4는 뒤쪽 빈 셀을 생략하므로, 헤더 길이에 맞게 패딩
+        const paddedRow = [...row];
+        while (paddedRow.length < headerLen) {
+            paddedRow.push('');
+        }
+        return paddedRow.map(cell => {
             const str = String(cell || '');
             if (str.includes(',') || str.includes('"') || str.includes('\n')) {
                 return `"${str.replace(/"/g, '""')}"`;
             }
             return str;
-        }).join(',')
-    ).join('\n');
+        }).join(',');
+    }).join('\n');
 }
 
 // ─── CSV 내보내기 (재시도 + 검증) ──────────────────
