@@ -64,8 +64,20 @@ export interface Listing {
 export function searchListings(listings: Listing[], query: string): Listing[] {
     if (!query.trim()) return listings;
 
-    // 띄어쓰기로 나눠 각 단어를 AND 조건으로 검색
-    const terms = query.trim().split(/\s+/).filter(t => t.length > 0);
+    // 스마트 토큰화: 띄어쓰기가 있으면 그대로 분리, 없으면 한글↔숫자 경계에서 분리
+    const trimmed = query.trim();
+    let terms: string[];
+    if (trimmed.includes(' ')) {
+        terms = trimmed.split(/\s+/).filter(t => t.length > 0);
+    } else {
+        // "매매1단지41평" → ["매매", "1단지", "41평"]
+        // 한글→숫자 또는 숫자/영문→한글 경계에 공백 삽입
+        const spaced = trimmed.replace(/([가-힣])(\d)/g, '$1 $2')
+            .replace(/(\d)([가-힣])/g, '$1 $2')
+            .replace(/([a-zA-Z])([가-힣])/g, '$1 $2')
+            .replace(/([가-힣])([a-zA-Z])/g, '$1 $2');
+        terms = spaced.split(/\s+/).filter(t => t.length > 0);
+    }
 
     return listings.filter(listing => {
         const allFields = [listing.complex, listing.type, listing.size, listing.features, listing.unit, listing.price];
