@@ -187,23 +187,30 @@ export default function HomePage() {
   }, [isMenuOpen]);
 
   // Filter and search listings
-  const typeFiltered = listingsData.filter(item => item.type === propertyType);
-  const complexFiltered = typeFiltered.filter(item => item.complex.includes(complex));
-  const sizeFiltered = complexFiltered.filter(item => {
-    // 35평과 56평은 A/B 구분
-    if (size === '35') {
-      return item.size === '35' || item.size.startsWith('35');
-    }
-    if (size === '56') {
-      return item.size === '56' || item.size.startsWith('56');
-    }
-    // 47평과 48평은 같은 것으로 처리
-    if (size === '47(48)' || size === '48(47)') {
-      return item.size === '47(48)' || item.size === '48(47)' || item.size === '47' || item.size === '48';
-    }
-    return item.size === size;
-  });
-  const searchFiltered = searchListings(sizeFiltered, searchQuery);
+  // 검색어가 있으면 전체 매물에서 검색 (드롭다운 필터 무시)
+  // 검색어가 없으면 드롭다운 필터 적용
+  let baseListings: typeof listingsData;
+  if (searchQuery.trim()) {
+    baseListings = listingsData;
+  } else {
+    const typeFiltered = listingsData.filter(item => item.type === propertyType);
+    const complexFiltered = typeFiltered.filter(item => item.complex.includes(complex));
+    baseListings = complexFiltered.filter(item => {
+      // 35평과 56평은 A/B 구분
+      if (size === '35') {
+        return item.size === '35' || item.size.startsWith('35');
+      }
+      if (size === '56') {
+        return item.size === '56' || item.size.startsWith('56');
+      }
+      // 47평과 48평은 같은 것으로 처리
+      if (size === '47(48)' || size === '48(47)') {
+        return item.size === '47(48)' || item.size === '48(47)' || item.size === '47' || item.size === '48';
+      }
+      return item.size === size;
+    });
+  }
+  const searchFiltered = searchListings(baseListings, searchQuery);
   const filteredListings = sortListings(searchFiltered, sortBy);
 
   const StatusPill = ({ status }: { status: string }) => {
