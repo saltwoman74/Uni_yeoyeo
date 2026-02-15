@@ -82,9 +82,16 @@ export function searchListings(listings: Listing[], query: string): Listing[] {
     return listings.filter(listing => {
         const allFields = [listing.complex, listing.type, listing.size, listing.features, listing.unit, listing.price];
         // 모든 검색어가 필드 중 하나에라도 매칭되어야 함
-        return terms.every(term =>
-            allFields.some(field => matchesSearch(field, term))
-        );
+        return terms.every(term => {
+            // 원래 검색어로 매칭 시도
+            if (allFields.some(field => matchesSearch(field, term))) return true;
+            // 평/동/층/억 등 접미사 제거 후 재시도 (예: "41평" → "41")
+            const stripped = term.replace(/[평동층억]$/g, '');
+            if (stripped && stripped !== term) {
+                return allFields.some(field => matchesSearch(field, stripped));
+            }
+            return false;
+        });
     });
 }
 
