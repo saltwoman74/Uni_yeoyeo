@@ -2,5 +2,12 @@
 User-agent: *
 Allow: /
 
+# 네이버 검색봇 명시 허용
+User-agent: Yeti
+Allow: /
+
+User-agent: Naverdot
+Allow: /
+
 # Sitemap
 Sitemap: https://uniyeoyeo.vercel.app/sitemap.xml
