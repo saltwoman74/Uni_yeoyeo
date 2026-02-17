@@ -92,7 +92,7 @@ export default function ListingModal({ listing, onClose }: ListingModalProps) {
                             전화 문의
                         </a>
                         <a
-                            href="https://lambent-sopapillas-6102aa.netlify.app/"
+                            href="https://chatbot-legacy-eogpxxvbf-qnehdtksznls-projects.vercel.app/"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center justify-center px-6 py-3 bg-white border-2 border-[#0F172A] text-[#0F172A] rounded-lg hover:bg-zinc-50 transition-colors font-semibold"

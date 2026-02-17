@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import SearchBar from './components/SearchBar';
 import ListingModal from './components/ListingModal';
+// import PopupModal from './components/PopupModal'; // Removed duplicate popup
 import MarketSignalCard from './components/MarketSignalCard';
 import AdminPage from './AdminPage';
 import { searchListings, sortListings, type Listing, type SortOption } from './utils/searchUtils';
@@ -50,7 +51,7 @@ const listingsData = [
 const knowledgeLinks = [
   { title: '박혜경의 부동산 인사이트', description: '네이버 블로그', link: 'https://blog.naver.com/qnehdtksznls2016', icon: 'https://ssl.pstatic.net/static/blog/image/blog_favicon.ico' },
   { title: '여여부동산 네이버카페', description: '네이버 카페', link: 'https://cafe.naver.com/saltwoman74', icon: 'https://ssl.pstatic.net/static/cafe/cafe_pc/default/cafe_favicon.png' },
-  { title: '24시간 상담 챗봇', description: 'AI 스마트 기능', link: 'https://lambent-sopapillas-6102aa.netlify.app/', icon: '🤖' },
+  { title: '24시간 상담 챗봇', description: 'AI 스마트 기능', link: 'https://chatbot-legacy-eogpxxvbf-qnehdtksznls-projects.vercel.app/', icon: '🤖' },
   { title: '유니시티 이미지 비교', description: '갤러리 앱', link: 'https://yeoyeo-gallery-v2.vercel.app/', icon: '🖼️' },
 ];
 
@@ -74,7 +75,7 @@ const navLinks = [
   { href: "#listings", text: "매물보기" },
   { href: "#market-analysis", text: "시장분석" },
   { href: "#community", text: "커뮤니티" },
-  { href: "https://lambent-sopapillas-6102aa.netlify.app/", text: "챗봇상담", external: true },
+  { href: "https://chatbot-legacy-eogpxxvbf-qnehdtksznls-projects.vercel.app", text: "챗봇상담", external: true },
   { href: "https://yeoyeo-gallery-v2.vercel.app/", text: "이미지비교", external: true },
 ];
 
@@ -88,6 +89,18 @@ export default function HomePage() {
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [showAdmin, setShowAdmin] = useState(false);
   const [isSheetDataLoaded, setIsSheetDataLoaded] = useState(false);
+  // const [showPopup, setShowPopup] = useState(false); // Moved to App.tsx
+
+  // 팝업 로직 제거 (App.tsx에서 통합 관리)
+  /*
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const dismissedDate = localStorage.getItem('yeoyeo_popup_dismissed');
+    if (dismissedDate !== today) {
+      setShowPopup(true);
+    }
+  }, []);
+  */
 
   // 단지별 평형 옵션
   const getSizeOptions = () => {
@@ -546,7 +559,7 @@ export default function HomePage() {
         <a href="tel:010-5016-3331" className="flex-1 flex items-center justify-center p-4 text-sm font-semibold text-zinc-800 border-r border-zinc-200 hover:bg-zinc-100 transition-colors">
           <PhoneIcon /> 전화 상담하기
         </a>
-        <a href="https://lambent-sopapillas-6102aa.netlify.app/" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center p-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-100 transition-colors">
+        <a href="https://chatbot-legacy-eogpxxvbf-qnehdtksznls-projects.vercel.app/" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center p-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-100 transition-colors">
           <ChatIcon /> 챗봇 상담
         </a>
       </div>
