@@ -99,8 +99,8 @@ export default function SearchBar({ onSearch, listings, placeholder = '매물종
             </form>
 
             <p className="mt-2 text-sm text-zinc-500 leading-relaxed">
-                단지명, 동, 가격, 방향, 특징(예: 공원뷰, 남향, 에어컨) 등으로 검색하면<br />
-                아래 매물 카드에 결과가 표시됩니다.
+                매물종류(매매,전세,월세), 단지명, 동, 가격, 방향, 특징(예: 공원뷰, 남향, 에어컨),<br />
+                그리고 <strong>최저가, 최고가</strong> 등으로 검색하면 아래 매물 카드에 결과가 표시됩니다.
             </p>
 
             {noResults && searchQuery && (
