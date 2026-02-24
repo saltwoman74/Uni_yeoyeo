@@ -79,10 +79,23 @@ export function searchListings(listings: Listing[], query: string): Listing[] {
         terms = spaced.split(/\s+/).filter(t => t.length > 0);
     }
 
-    return listings.filter(listing => {
+    // 특수 키워드 확인 (최저가/최고가)
+    const isMinQuery = terms.some(t => t.includes('최저가') || t.includes('가장싼') || t.includes('가장저렴한'));
+    const isMaxQuery = terms.some(t => t.includes('최고가') || t.includes('가장비싼'));
+
+    // 키워드 제거 후 일반 검색용 용어들
+    const searchTerms = terms.filter(t =>
+        !['최저가', '가장싼', '가장저렴한', '최고가', '가장비싼'].includes(t)
+    );
+
+    const filtered = listings.filter(listing => {
         const allFields = [listing.complex, listing.type, listing.size, listing.features, listing.unit, listing.price];
+
+        // 검색어가 없으면 (최저가만 검색한 경우 등) 통과
+        if (searchTerms.length === 0) return true;
+
         // 모든 검색어가 필드 중 하나에라도 매칭되어야 함
-        return terms.every(term => {
+        return searchTerms.every(term => {
             // 원래 검색어로 매칭 시도
             if (allFields.some(field => matchesSearch(field, term))) return true;
             // 평/동/층/억 등 접미사 제거 후 재시도 (예: "41평" → "41")
@@ -93,6 +106,29 @@ export function searchListings(listings: Listing[], query: string): Listing[] {
             return false;
         });
     });
+
+    if (filtered.length <= 1) return filtered;
+
+    // 최저가/최고가 처리
+    if (isMinQuery) {
+        let minPrice = Infinity;
+        filtered.forEach(l => {
+            const p = parsePriceToNumber(l.price);
+            if (p < minPrice) minPrice = p;
+        });
+        return filtered.filter(l => parsePriceToNumber(l.price) === minPrice);
+    }
+
+    if (isMaxQuery) {
+        let maxPrice = -1;
+        filtered.forEach(l => {
+            const p = parsePriceToNumber(l.price);
+            if (p > maxPrice) maxPrice = p;
+        });
+        return filtered.filter(l => parsePriceToNumber(l.price) === maxPrice);
+    }
+
+    return filtered;
 }
 
 /**
