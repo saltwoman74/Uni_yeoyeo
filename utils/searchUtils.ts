@@ -64,29 +64,42 @@ export interface Listing {
 export function searchListings(listings: Listing[], query: string): Listing[] {
     if (!query.trim()) return listings;
 
-    // 스마트 토큰화: 띄어쓰기가 있으면 그대로 분리, 없으면 한글↔숫자 경계에서 분리
-    const trimmed = query.trim();
-    let terms: string[];
-    if (trimmed.includes(' ')) {
-        terms = trimmed.split(/\s+/).filter(t => t.length > 0);
-    } else {
-        // "매매1단지41평" → ["매매", "1단지", "41평"]
-        // 한글→숫자 또는 숫자/영문→한글 경계에 공백 삽입
-        const spaced = trimmed.replace(/([가-힣])(\d)/g, '$1 $2')
-            .replace(/(\d)([가-힣])/g, '$1 $2')
-            .replace(/([a-zA-Z])([가-힣])/g, '$1 $2')
-            .replace(/([가-힣])([a-zA-Z])/g, '$1 $2');
-        terms = spaced.split(/\s+/).filter(t => t.length > 0);
+    let isMinQuery = false;
+    let isMaxQuery = false;
+    let processedQuery = query.trim();
+
+    // 1. 특수 토큰 먼저 분리 및 마킹
+    const minKeywords = ['최저가', '가장싼', '가장저렴한'];
+    minKeywords.forEach(kw => {
+        if (processedQuery.includes(kw)) {
+            isMinQuery = true;
+            processedQuery = processedQuery.replace(new RegExp(kw, 'g'), ' ');
+        }
+    });
+
+    const maxKeywords = ['최고가', '가장비싼'];
+    maxKeywords.forEach(kw => {
+        if (processedQuery.includes(kw)) {
+            isMaxQuery = true;
+            processedQuery = processedQuery.replace(new RegExp(kw, 'g'), ' ');
+        }
+    });
+
+    // 2. 스마트 토큰화: 띄어쓰기가 있으면 그대로 분리, 없으면 한글↔숫자 경계에서 분리
+    const trimmed = processedQuery.trim();
+    let searchTerms: string[] = [];
+    if (trimmed) {
+        if (trimmed.includes(' ')) {
+            searchTerms = trimmed.split(/\s+/).filter(t => t.length > 0);
+        } else {
+            // "매매1단지41평" → ["매매", "1단지", "41평"]
+            const spaced = trimmed.replace(/([가-힣])(\d)/g, '$1 $2')
+                .replace(/(\d)([가-힣])/g, '$1 $2')
+                .replace(/([a-zA-Z])([가-힣])/g, '$1 $2')
+                .replace(/([가-힣])([a-zA-Z])/g, '$1 $2');
+            searchTerms = spaced.split(/\s+/).filter(t => t.length > 0);
+        }
     }
-
-    // 특수 키워드 확인 (최저가/최고가)
-    const isMinQuery = terms.some(t => t.includes('최저가') || t.includes('가장싼') || t.includes('가장저렴한'));
-    const isMaxQuery = terms.some(t => t.includes('최고가') || t.includes('가장비싼'));
-
-    // 키워드 제거 후 일반 검색용 용어들
-    const searchTerms = terms.filter(t =>
-        !['최저가', '가장싼', '가장저렴한', '최고가', '가장비싼'].includes(t)
-    );
 
     const filtered = listings.filter(listing => {
         const allFields = [listing.complex, listing.type, listing.size, listing.features, listing.unit, listing.price];
