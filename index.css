@@ -1,3 +1,33 @@
+/* ===== A2Z Font (에이투지체) ===== */
+@font-face {
+  font-family: 'A2Z';
+  src: url('/fonts/A2Z-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'A2Z';
+  src: url('/fonts/A2Z-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'A2Z';
+  src: url('/fonts/A2Z-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'A2Z';
+  src: url('/fonts/A2Z-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ===== CSS Reset & Base Styles ===== */
 *,
 *::before,

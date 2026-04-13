@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import SearchBar from './components/SearchBar';
 import ListingModal from './components/ListingModal';
-import MarketSignalCard from './components/MarketSignalCard';
 import AdminPage from './AdminPage';
 import { searchListings, sortListings, type Listing, type SortOption } from './utils/searchUtils';
 import { fetchAllMarketData } from './utils/apiService';
@@ -51,23 +50,19 @@ const knowledgeLinks = [
   { title: '박혜경의 부동산 인사이트', description: '네이버 블로그', link: 'https://blog.naver.com/qnehdtksznls2016', icon: 'https://ssl.pstatic.net/static/blog/image/blog_favicon.ico' },
   { title: '여여부동산 네이버카페', description: '네이버 카페', link: 'https://cafe.naver.com/saltwoman74', icon: 'https://ssl.pstatic.net/static/cafe/cafe_pc/default/cafe_favicon.png' },
   { title: '24시간 상담 챗봇', description: 'AI 스마트 기능', link: 'https://chatbot-legacy.vercel.app/', icon: '🤖' },
-  { title: '유니시티 이미지 비교', description: '갤러리 앱', link: 'https://yeoyeo-gallery-v2.vercel.app/', icon: '🖼️' },
+  { title: '유니시티 이미지 비교', description: '갤러리 앱', link: 'https://yeoyeo-gallery-v2.vercel.app/', icon: 'compare' },
 ];
 
-const newsData = [
-  { title: "2026-27년 창원 입주 물량 급감... 공급 부족 심화 전망", source: "부동산 뉴스", date: "2026.02.24", link: "#", content: "2026년 입주 예정 물량이 전년 대비 58% 감소한 3,474호에 불과하여 전세 및 매매가 상승 압박." },
-  { title: "의창구 중동 '스타필드' 개발 기대감 지속... 생활권 재평가", source: "부동산 뉴스", date: "2026.02.24", link: "#", content: "대형 복합쇼핑시설 스타필드 착공 및 개발 소식이 유니시티 주변 인프라 가치 상승 견인." },
-  { title: "대기업 투자 활성화로 창원 경제 활력... 부동산 시장에도 긍정적", source: "부동산 뉴스", date: "2026.02.24", link: "#", content: "한화에어로스페이스, 현대로템 등 지역 기반 대기업들의 호황이 배후 수요를 뒷받침." },
-]
-
+// 각 사이트의 실제 favicon을 Google favicon API로 안정적으로 로드
+const favicon = (domain: string) => `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 const trustLinks = [
-  { name: '청약홈', logo: 'https://www.applyhome.co.kr/images/logo_new.png', link: 'https://www.applyhome.co.kr/' },
-  { name: '네이버부동산', logo: 'https://s.pstatic.net/static/www/mobile/edit/20240105_1000/upload_1704439169722KaoIr.png', link: 'https://land.naver.com/' },
-  { name: '홈택스', logo: 'https://www.hometax.go.kr/img/new/logo_220922.png', link: 'https://www.hometax.go.kr/' },
-  { name: '위택스', logo: 'https://www.wetax.go.kr/images/header_logo.png', link: 'https://www.wetax.go.kr/' },
-  { name: '실거래가 공개시스템', logo: 'https://rt.molit.go.kr/img/logo_rt.png', link: 'https://rt.molit.go.kr/' },
-  { name: '금융위원회', logo: 'https://www.fsc.go.kr/images/common/logo_fsc.png', link: 'https://www.fsc.go.kr/' },
-  { name: '기금e든든', logo: 'https://enhuf.molit.go.kr/images/common/logo.png', link: 'https://enhuf.molit.go.kr/' },
+  { name: '청약홈', logo: favicon('applyhome.co.kr'), link: 'https://www.applyhome.co.kr/' },
+  { name: '네이버부동산', logo: favicon('land.naver.com'), link: 'https://land.naver.com/' },
+  { name: '홈택스', logo: favicon('hometax.go.kr'), link: 'https://www.hometax.go.kr/' },
+  { name: '위택스', logo: favicon('wetax.go.kr'), link: 'https://www.wetax.go.kr/' },
+  { name: '실거래가 공개시스템', logo: favicon('rt.molit.go.kr'), link: 'https://rt.molit.go.kr/' },
+  { name: '금융위원회', logo: favicon('fsc.go.kr'), link: 'https://www.fsc.go.kr/' },
+  { name: '기금e든든', logo: favicon('enhuf.molit.go.kr'), link: 'https://enhuf.molit.go.kr/' },
 ];
 
 const navLinks = [
@@ -143,13 +138,19 @@ export default function HomePage() {
     loadMarketData();
     loadListingsData();
 
-    // 1시간마다 자동 업데이트
-    const interval = setInterval(() => {
+    // 매일 KST 09:00 1회 자동 업데이트 (백엔드 캐시도 같은 시각까지 유효)
+    const KST_OFFSET = 9 * 60 * 60 * 1000;
+    const nowKst = new Date(Date.now() + KST_OFFSET);
+    const target = new Date(nowKst);
+    target.setUTCHours(9, 0, 0, 0);
+    if (nowKst.getUTCHours() >= 9) target.setUTCDate(target.getUTCDate() + 1);
+    const msUntilNine = (target.getTime() - KST_OFFSET) - Date.now();
+    const interval = setTimeout(() => {
       loadMarketData();
       loadListingsData();
-    }, 60 * 60 * 1000); // 1시간
+    }, Math.max(msUntilNine, 60 * 1000));
 
-    return () => clearInterval(interval);
+    return () => clearTimeout(interval);
   }, []);
 
   const loadMarketData = async () => {
@@ -233,7 +234,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="bg-white text-zinc-800 relative z-20 font-['Pretendard']">
+    <div className="bg-white text-zinc-800 relative z-20 font-['A2Z']">
       <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-sm border-b border-zinc-200">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center space-x-2">
@@ -273,10 +274,27 @@ export default function HomePage() {
       )}
 
       <main className="overflow-hidden">
-        <section className="py-24 sm:py-32 text-center bg-zinc-50">
+        <section className="py-10 sm:py-14 text-center bg-zinc-50">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-bold tracking-tight text-black sm:text-5xl">데이터가 말해주는 창원유니시티 가치, <br className="sm:hidden" />여여부동산이 함께합니다.</h1>
-            <div className="mt-10 max-w-xl mx-auto">
+            <h1 className="text-2xl font-extrabold tracking-tight text-black sm:text-4xl leading-snug">
+              거래가 필요할때 매물보다<br />
+              부동산소장을 먼저 선택해보세요
+            </h1>
+            <div className="mt-6 max-w-2xl mx-auto px-4">
+              <div className="border-2 border-zinc-900 rounded-xl bg-white shadow-sm px-6 py-6 sm:px-8 sm:py-7">
+                <p className="text-base sm:text-lg font-medium text-zinc-800 leading-loose text-center">
+                  저는 학습하는 시간중 가장 많은시간을<br />
+                  <span className="text-black font-bold">시장변화 예측</span>에 공을 들이고 있는<br />
+                  공인중개사 입니다
+                </p>
+                <p className="mt-5 text-base sm:text-lg font-medium text-zinc-800 leading-loose text-center">
+                  아울러 <span className="text-black font-bold">대비·대처·해결</span> 하기위한<br />
+                  <span className="text-black font-bold">근거있는 자료</span>를 제공하며<br />
+                  상담에 응하고 있습니다
+                </p>
+              </div>
+            </div>
+            <div className="mt-8 max-w-xl mx-auto">
               <SearchBar
                 onSearch={setSearchQuery}
                 listings={listingsData}
@@ -288,7 +306,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="listings" className="py-20 sm:py-24 bg-zinc-50">
+        <section id="listings" className="py-8 sm:py-10 bg-zinc-50">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-center tracking-tight text-black sm:text-4xl">매물목록</h2>
 
@@ -438,7 +456,7 @@ export default function HomePage() {
 
         <section id="market-analysis" className="py-20 sm:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center tracking-tight text-black sm:text-4xl">Market Intelligence</h2>
+            <h2 className="text-3xl font-bold text-center tracking-tight text-black sm:text-4xl">시장동향</h2>
             <p className="text-center mt-4 text-zinc-600">데이터로 시장의 흐름을 정확하게 읽어냅니다.</p>
 
             {/* 6개 데이터 카드 - 2행 3열 */}
@@ -458,29 +476,6 @@ export default function HomePage() {
               <DataCard title="KOSPI" value={marketData.kospi.value} change={marketData.kospi.change} type={marketData.kospi.type as 'up' | 'down'} />
             </div>
 
-            {/* 행동강령 - 맨 아래 배치 */}
-            <div className="mt-12">
-              <MarketSignalCard
-                status={marketData.marketSignal.status}
-                buyer={marketData.marketSignal.buyer}
-                seller={marketData.marketSignal.seller}
-                updated={marketData.marketSignal.updated}
-              />
-            </div>
-          </div>
-        </section>
-
-        <section id="news" className="py-20 sm:py-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center tracking-tight text-black sm:text-4xl">관련 소식</h2>
-            <div className="mt-12 space-y-4 max-w-3xl mx-auto">
-              {newsData.map((item, idx) => (
-                <a key={idx} href={item.link} className="block p-5 bg-white border border-zinc-200/80 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all">
-                  <h3 className="font-semibold text-zinc-900">{item.title}</h3>
-                  <p className="mt-2 text-sm text-zinc-500">{item.source} | {item.date}</p>
-                </a>
-              ))}
-            </div>
           </div>
         </section>
 
@@ -498,6 +493,47 @@ export default function HomePage() {
                     <div className="w-16 h-16 mx-auto bg-green-600 rounded-lg flex items-center justify-center">
                       <span className="text-white font-bold text-sm">CAFE</span>
                     </div>
+                  ) : item.icon === 'compare' ? (
+                    <div className="relative w-20 h-16 mx-auto">
+                      {/* 좌측 사진 (BEFORE 느낌 - 세피아) */}
+                      <div className="absolute left-0 top-1 w-12 h-14 rounded-md overflow-hidden border-2 border-white shadow-md -rotate-6 bg-gradient-to-b from-amber-200 to-amber-400">
+                        <svg viewBox="0 0 48 56" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                          <rect x="0" y="0" width="48" height="56" fill="#fef3c7" />
+                          <rect x="6" y="18" width="10" height="38" fill="#92400e" />
+                          <rect x="18" y="10" width="12" height="46" fill="#b45309" />
+                          <rect x="32" y="22" width="10" height="34" fill="#92400e" />
+                          <g fill="#fef3c7">
+                            <rect x="8" y="22" width="2" height="2" /><rect x="12" y="22" width="2" height="2" />
+                            <rect x="20" y="14" width="2" height="2" /><rect x="24" y="14" width="2" height="2" /><rect x="26" y="14" width="2" height="2" />
+                            <rect x="20" y="20" width="2" height="2" /><rect x="24" y="20" width="2" height="2" /><rect x="26" y="20" width="2" height="2" />
+                            <rect x="34" y="26" width="2" height="2" /><rect x="38" y="26" width="2" height="2" />
+                          </g>
+                          <circle cx="38" cy="10" r="4" fill="#fbbf24" />
+                        </svg>
+                      </div>
+                      {/* 우측 사진 (AFTER 느낌 - 컬러) */}
+                      <div className="absolute right-0 top-0 w-12 h-14 rounded-md overflow-hidden border-2 border-white shadow-lg rotate-6 bg-gradient-to-b from-sky-200 to-sky-400">
+                        <svg viewBox="0 0 48 56" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                          <rect x="0" y="0" width="48" height="56" fill="#e0f2fe" />
+                          <rect x="0" y="40" width="48" height="16" fill="#86efac" />
+                          <rect x="4" y="12" width="12" height="44" fill="#334155" />
+                          <rect x="18" y="4" width="14" height="52" fill="#475569" />
+                          <rect x="34" y="16" width="10" height="40" fill="#334155" />
+                          <g fill="#fde047">
+                            <rect x="6" y="16" width="2" height="2" /><rect x="10" y="16" width="2" height="2" />
+                            <rect x="6" y="22" width="2" height="2" /><rect x="10" y="22" width="2" height="2" />
+                            <rect x="20" y="8" width="2" height="2" /><rect x="24" y="8" width="2" height="2" /><rect x="28" y="8" width="2" height="2" />
+                            <rect x="20" y="14" width="2" height="2" /><rect x="24" y="14" width="2" height="2" /><rect x="28" y="14" width="2" height="2" />
+                            <rect x="20" y="20" width="2" height="2" /><rect x="24" y="20" width="2" height="2" /><rect x="28" y="20" width="2" height="2" />
+                            <rect x="36" y="20" width="2" height="2" /><rect x="40" y="20" width="2" height="2" />
+                          </g>
+                        </svg>
+                      </div>
+                      {/* VS 배지 */}
+                      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-[#D4AF37] text-white text-[10px] font-black rounded-full w-6 h-6 flex items-center justify-center shadow-lg border-2 border-white">
+                        VS
+                      </div>
+                    </div>
                   ) : item.icon.startsWith('http') ? (
                     <img src={item.icon} alt={item.title} className="w-12 h-12 mx-auto object-contain" />
                   ) : (
@@ -514,10 +550,24 @@ export default function HomePage() {
         <section id="trust-links" className="py-20 sm:py-24">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-center text-2xl sm:text-3xl font-bold text-zinc-800">신뢰할 수 있는 사이트</h2>
-            <div className="mt-8 flex flex-wrap justify-center items-center gap-x-8 gap-y-6 sm:gap-x-12">
+            <div className="mt-10 grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-6">
               {trustLinks.map(link => (
-                <a key={link.name} href={link.link} target="_blank" rel="noopener noreferrer" title={link.name} className="group">
-                  <img src={link.logo} alt={link.name} className="h-16 sm:h-18 object-contain grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all group-hover:scale-110" />
+                <a
+                  key={link.name}
+                  href={link.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={link.name}
+                  className="group flex flex-col items-center justify-start gap-3 p-4 rounded-xl bg-white border border-zinc-200 hover:border-zinc-900 hover:shadow-md transition-all"
+                >
+                  <img
+                    src={link.logo}
+                    alt={link.name}
+                    className="h-12 w-12 sm:h-14 sm:w-14 object-contain group-hover:scale-110 transition-transform"
+                  />
+                  <span className="text-sm sm:text-base font-semibold text-zinc-800 text-center leading-tight">
+                    {link.name}
+                  </span>
                 </a>
               ))}
             </div>

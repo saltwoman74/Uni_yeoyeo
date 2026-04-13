@@ -4,9 +4,10 @@ import React, { useEffect, useRef, useState } from 'react';
 interface LandingPageProps {
   scrollRef?: React.RefObject<HTMLDivElement>;
   scrollDuration: number;
+  isMobile?: boolean;
 }
 
-export default function LandingPage({ scrollRef, scrollDuration }: LandingPageProps) {
+export default function LandingPage({ scrollRef, scrollDuration, isMobile = false }: LandingPageProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const targetTimeRef = useRef(0);
   const animationFrameRef = useRef<number | undefined>(undefined);
@@ -33,6 +34,27 @@ export default function LandingPage({ scrollRef, scrollDuration }: LandingPagePr
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('error', handleError);
+
+    // 모바일: 스크럽 비활성화, 비디오 1회 자동재생 후 정지
+    if (isMobile) {
+      const playOnce = () => {
+        video.play().catch(() => {});
+      };
+      video.addEventListener('loadedmetadata', playOnce);
+      const handleScrollMobile = () => {
+        const scrollTop = scrollRef?.current ? container.scrollTop : window.scrollY;
+        const progress = Math.min(Math.max(scrollTop / scrollDuration, 0), 1);
+        setScrollProgress(progress);
+      };
+      scrollElement.addEventListener('scroll', handleScrollMobile, { passive: true });
+      handleScrollMobile();
+      return () => {
+        scrollElement.removeEventListener('scroll', handleScrollMobile);
+        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        video.removeEventListener('loadedmetadata', playOnce);
+        video.removeEventListener('error', handleError);
+      };
+    }
 
     const handleScroll = () => {
       if (!video || !videoLoaded) return;
@@ -71,7 +93,7 @@ export default function LandingPage({ scrollRef, scrollDuration }: LandingPagePr
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [videoLoaded, scrollRef, scrollDuration]);
+  }, [videoLoaded, scrollRef, scrollDuration, isMobile]);
 
   return (
     <div className="sticky top-0 h-screen w-full overflow-hidden z-10 bg-white">
@@ -88,7 +110,7 @@ export default function LandingPage({ scrollRef, scrollDuration }: LandingPagePr
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 z-20">
           <div className="text-center px-4">
             <h1 className="text-6xl sm:text-8xl font-black text-[#0F172A] tracking-tight mb-3" style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '0.05em' }}>UNI_CITY</h1>
-            <p className="text-3xl sm:text-4xl text-zinc-700 font-normal" style={{ fontFamily: 'Pretendard, sans-serif' }}>여여부동산</p>
+            <p className="text-3xl sm:text-4xl text-zinc-700 font-normal" style={{ fontFamily: "'A2Z', Pretendard, sans-serif" }}>여여부동산</p>
           </div>
         </div>
       )}
@@ -108,7 +130,7 @@ export default function LandingPage({ scrollRef, scrollDuration }: LandingPagePr
         style={{ opacity: 1 - scrollProgress * 2 }}
       >
         <h1 className="text-6xl sm:text-8xl font-black text-white tracking-tight mb-3" style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '0.05em' }}>UNI_CITY</h1>
-        <p className="text-3xl sm:text-4xl text-white/95 font-normal" style={{ fontFamily: 'Pretendard, sans-serif' }}>여여부동산</p>
+        <p className="text-3xl sm:text-4xl text-white/95 font-normal" style={{ fontFamily: "'A2Z', Pretendard, sans-serif" }}>여여부동산</p>
       </div>
 
       {/* Scroll Indicator - Bouncing Arrow (Persists until header appears) */}
@@ -116,7 +138,7 @@ export default function LandingPage({ scrollRef, scrollDuration }: LandingPagePr
         className="absolute bottom-20 left-0 right-0 flex flex-col items-center animate-bounce pointer-events-none transition-opacity duration-500"
         style={{ opacity: scrollProgress > 0.9 ? 0 : 0.8 }}
       >
-        <span className="text-white text-lg font-bold mb-2 tracking-widest drop-shadow-md">위로 스크롤 10회</span>
+        <span className="text-white text-lg font-bold mb-2 tracking-widest drop-shadow-md">{isMobile ? '스크롤' : '위로 스크롤 10회'}</span>
         {/* Arrow pointing UP */}
         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white drop-shadow-md rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />

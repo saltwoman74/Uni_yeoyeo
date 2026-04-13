@@ -37,13 +37,22 @@ export default function App() {
     return () => window.removeEventListener('hashchange', checkHash);
   }, []);
 
-  // This spacer div's height will control the video scroll duration
-  const videoScrollDuration = 3000; // in pixels
+  // 모바일에서는 스크롤 스크럽 비활성화 + 스크롤 거리 대폭 축소 (1스크롤 이내)
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
+  const videoScrollDuration = isMobile ? 400 : 3000; // 모바일은 짧게, 데스크톱은 스크럽 유지
 
   return (
     <>
       <div className="w-full">
-        <LandingPage scrollDuration={videoScrollDuration} />
+        <LandingPage scrollDuration={videoScrollDuration} isMobile={isMobile} />
         {/* This spacer div creates the scrollable area for the video */}
         <div style={{ height: `${videoScrollDuration}px` }} />
         <HomePage />
