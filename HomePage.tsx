@@ -281,17 +281,13 @@ export default function HomePage() {
               부동산소장을 먼저 선택해보세요
             </h1>
             <div className="mt-6 max-w-2xl mx-auto px-4">
-              <div className="border-2 border-zinc-900 rounded-xl bg-white shadow-sm px-6 py-6 sm:px-8 sm:py-7">
-                <p className="text-base sm:text-lg font-medium text-zinc-800 leading-loose text-center">
-                  저는 학습하는 시간중 가장 많은시간을<br />
-                  <span className="text-black font-bold">시장변화 예측</span>에 공을 들이고 있는<br />
-                  공인중개사 입니다
-                </p>
-                <p className="mt-5 text-base sm:text-lg font-medium text-zinc-800 leading-loose text-center">
-                  아울러 <span className="text-black font-bold">대비·대처·해결</span> 하기위한<br />
-                  <span className="text-black font-bold">근거있는 자료</span>를 제공하며<br />
-                  상담에 응하고 있습니다
-                </p>
+              <div className="border-2 border-zinc-900 rounded-xl bg-white shadow-sm px-6 py-6 sm:px-8 sm:py-7 space-y-1.5 text-center">
+                <p className="text-base sm:text-lg font-medium text-zinc-800">저는 학습하는 시간중 가장 많은시간을</p>
+                <p className="text-base sm:text-lg font-medium text-zinc-800"><span className="text-black font-bold">시장변화 예측</span>에 공을 들이고 있는</p>
+                <p className="text-base sm:text-lg font-medium text-zinc-800">공인중개사 입니다</p>
+                <p className="text-base sm:text-lg font-medium text-zinc-800 pt-4">아울러 <span className="text-black font-bold">대비·대처·해결</span> 하기위한</p>
+                <p className="text-base sm:text-lg font-medium text-zinc-800"><span className="text-black font-bold">근거있는 자료</span>를 제공하며</p>
+                <p className="text-base sm:text-lg font-medium text-zinc-800">상담에 응하고 있습니다</p>
               </div>
             </div>
             <div className="mt-8 max-w-xl mx-auto">
