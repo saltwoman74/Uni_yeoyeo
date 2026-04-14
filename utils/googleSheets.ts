@@ -59,22 +59,29 @@ function parseCSV(csvText: string): Listing[] {
         const values = parseCSVLine(line);
 
         if (values.length >= 11) {
-            // 평타입(index 7) 우선, 없으면 공급(index 5) 사용
-            // index가 1부터 시작 (첫 번째 열이 빈 열)
+            // CSV 열: 0(빈),1단지명,2동,3거래종류,4가격,5공급,6타입(A/B),7평타입,8층,9방향,10매물특징,11(빈),12여여체크
             const rawSize = (values[7] || values[5] || '').replace('평', '');
             const complex = values[1] || '';
             const type = values[3] || '';
+            const dong = values[2] || '';
+            const floor = values[8] || '';
+            const direction = values[9] || '';
+            const rawFeatures = values[10] || '';
 
             // 빈 데이터 필터링
             if (!complex || !type) continue;
 
+            // 동·층을 합친 unit, 방향·특징을 합친 features로 검색 커버리지 확대
+            const unit = [dong, floor].filter(Boolean).join(' ').trim();
+            const features = [direction, rawFeatures].filter(Boolean).join(' ').trim();
+
             listings.push({
                 complex,
-                unit: values[2] || '',
+                unit,
                 type,
                 price: values[4] || '',
                 size: rawSize,
-                features: values[10] || '',
+                features,
                 category: 'unicity'
             });
         }

@@ -85,20 +85,30 @@ export function searchListings(listings: Listing[], query: string): Listing[] {
         }
     });
 
-    // 2. 스마트 토큰화: 띄어쓰기가 있으면 그대로 분리, 없으면 한글↔숫자 경계에서 분리
-    const trimmed = processedQuery.trim();
+    // 2. 스마트 토큰화
+    //   - 구분자(. , / - · | + 등)를 공백으로 치환
+    //   - 숫자-한글 경계에서 분리하되, 평/동/층/억 유닛 접미사는 숫자에 붙여둠
+    //   - 유닛 뒤에 다른 한글/숫자가 오면 거기서 분리
+    //   예: "41평매매최저가" → ["41평", "매매"] (최저가는 상단에서 제거)
+    //       "41평 매매"       → ["41평", "매매"]
+    //       "매매1단지35A타입"→ ["매매", "1단지", "35A", "타입"]
+    const SEPARATORS = /[.,/\-·|+、，]+/g;
+    const normalized = processedQuery.replace(SEPARATORS, ' ').trim();
     let searchTerms: string[] = [];
-    if (trimmed) {
-        if (trimmed.includes(' ')) {
-            searchTerms = trimmed.split(/\s+/).filter(t => t.length > 0);
-        } else {
-            // "매매1단지41평" → ["매매", "1단지", "41평"]
-            const spaced = trimmed.replace(/([가-힣])(\d)/g, '$1 $2')
-                .replace(/(\d)([가-힣])/g, '$1 $2')
-                .replace(/([a-zA-Z])([가-힣])/g, '$1 $2')
-                .replace(/([가-힣])([a-zA-Z])/g, '$1 $2');
-            searchTerms = spaced.split(/\s+/).filter(t => t.length > 0);
-        }
+    if (normalized) {
+        const spaced = normalized
+            .replace(/([가-힣])(\d)/g, '$1 $2')
+            // 숫자 → 한글: 단, 뒤 한글이 평/동/층/억이면 붙여둠
+            .replace(/(\d)(?![평동층억])([가-힣])/g, '$1 $2')
+            // 유닛(평/동/층/억) 뒤에 숫자가 오면 분리
+            .replace(/([평동층억])(\d)/g, '$1 $2')
+            // 유닛 뒤에 다른 한글이 오면 분리
+            .replace(/([평동층억])([가-힣])/g, '$1 $2')
+            .replace(/([a-zA-Z])([가-힣])/g, '$1 $2')
+            .replace(/([가-힣])([a-zA-Z])/g, '$1 $2');
+        searchTerms = spaced.split(/\s+/).filter(t => t.length > 0);
+        // 안전망: 단독 유닛 토큰("평","동","층","억")은 노이즈로 제거
+        searchTerms = searchTerms.filter(t => !/^[평동층억]$/.test(t));
     }
 
     const filtered = listings.filter(listing => {
@@ -256,6 +266,9 @@ export function generateSearchSuggestions(
         }
         if (matchesSearch(listing.type, query)) {
             suggestions.add(listing.type);
+        }
+        if (listing.size && matchesSearch(listing.size, query)) {
+            suggestions.add(`${listing.size}평`);
         }
     });
 

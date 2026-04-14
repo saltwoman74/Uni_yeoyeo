@@ -11,7 +11,7 @@ interface SearchBarProps {
     searchQuery?: string;
 }
 
-export default function SearchBar({ onSearch, listings, placeholder = '매물종류(매매,전세,월세).단지.평형(타입)', className = '', noResults = false, searchQuery = '' }: SearchBarProps) {
+export default function SearchBar({ onSearch, listings, placeholder = '예: 매매 1단지 35평 / 전세 남향 / 최저가', className = '', noResults = false, searchQuery = '' }: SearchBarProps) {
     const [query, setQuery] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);

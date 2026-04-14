@@ -124,12 +124,13 @@ export default function HomePage() {
     }
   });
 
+  // 시트 로드 실패/지연 대비 기본 데이터 (실제 시트와 동일한 shape: 거래종류=매매/전세/월세)
   const [listingsData, setListingsData] = useState<Listing[]>([
-    { type: '아파트', complex: '유니시티 4단지', size: '35평', unit: '405동 고층', price: '8억 5,000', features: '남향, 공원뷰, 풀옵션', category: 'unicity' },
-    { type: '아파트', complex: '유니시티 3단지', size: '41평', unit: '301동 중층', price: '10억 2,000', features: '코너, 조망 우수, 올수리', category: 'unicity' },
-    { type: '아파트', complex: '유니시티 1단지', size: '30평', unit: '110동 로얄층', price: '7억 8,000', features: '역세권, 채광 좋음', category: 'unicity' },
-    { type: '상가', complex: '유니시티 어반브릭스', size: '15평', unit: '1층 코너', price: '5,000/250', features: '유동인구 많음', category: 'all' },
-    { type: '오피스텔', complex: '힐스테이트 에비뉴', size: '25평', unit: 'A동 15층', price: '3억 2,000', features: '풀퍼니시드, 업무 최적', category: 'all' },
+    { type: '매매', complex: '창원중동유니시티4단지', size: '35', unit: '405동 고/35층', price: '8억 5,000', features: '남향 공원뷰 풀옵션', category: 'unicity' },
+    { type: '매매', complex: '창원중동유니시티3단지', size: '41', unit: '301동 중/30층', price: '10억 2,000', features: '남향 코너 조망 우수 올수리', category: 'unicity' },
+    { type: '매매', complex: '창원중동유니시티1단지', size: '30', unit: '110동 중/32층', price: '7억 8,000', features: '남향 역세권 채광 좋음', category: 'unicity' },
+    { type: '전세', complex: '창원중동유니시티4단지', size: '35A타입', unit: '405동 고/35층', price: '5억 5,000', features: '남향 시스템에어컨', category: 'unicity' },
+    { type: '월세', complex: '창원중동유니시티2단지', size: '35B타입', unit: '203동 중/42층', price: '2억/150', features: '남서향 에어컨 중문', category: 'unicity' },
   ]);
 
   // API에서 데이터 가져오기
