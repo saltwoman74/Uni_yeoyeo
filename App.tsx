@@ -40,8 +40,10 @@ export default function App() {
   // 모바일에서는 스크롤 스크럽 비활성화 + 스크롤 거리 대폭 축소 (1스크롤 이내)
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 768px)');
-    const update = () => setIsMobile(mq.matches);
+    // 터치 디바이스거나 너비 1024px 이하면 모바일로 간주 (태블릿 포함)
+    const mq = window.matchMedia('(max-width: 1024px)');
+    const isTouch = 'ontouchstart' in window || (navigator.maxTouchPoints ?? 0) > 0;
+    const update = () => setIsMobile(mq.matches || isTouch);
     update();
     mq.addEventListener('change', update);
     return () => mq.removeEventListener('change', update);
