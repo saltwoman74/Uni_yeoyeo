@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import SearchBar from './components/SearchBar';
 import ListingModal from './components/ListingModal';
 import AdminPage from './AdminPage';
 import { searchListings, sortListings, type Listing, type SortOption } from './utils/searchUtils';
@@ -290,15 +289,6 @@ export default function HomePage() {
                 <p className="text-base sm:text-lg font-medium text-zinc-800"><span className="text-black font-bold">근거있는 자료</span>를 제공하며</p>
                 <p className="text-base sm:text-lg font-medium text-zinc-800">상담에 응하고 있습니다</p>
               </div>
-            </div>
-            <div className="mt-8 max-w-xl mx-auto">
-              <SearchBar
-                onSearch={setSearchQuery}
-                listings={listingsData}
-                placeholder="매물종류(매매,전세,월세).단지.평형(타입)"
-                noResults={searchQuery.trim() !== '' && filteredListings.length === 0}
-                searchQuery={searchQuery}
-              />
             </div>
           </div>
         </section>
