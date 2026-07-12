@@ -37,7 +37,7 @@ export default function App() {
     return () => window.removeEventListener('hashchange', checkHash);
   }, []);
 
-  // 모바일에서는 스크롤 스크럽 비활성화 + 스크롤 거리 대폭 축소 (1스크롤 이내)
+  // 랜딩 이미지 변형(웹/모바일) 선택용 디바이스 판별
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     // 터치 디바이스거나 너비 1024px 이하면 모바일로 간주 (태블릿 포함)
@@ -49,14 +49,11 @@ export default function App() {
     return () => mq.removeEventListener('change', update);
   }, []);
 
-  const videoScrollDuration = isMobile ? 400 : 3000; // 모바일은 짧게, 데스크톱은 스크럽 유지
-
   return (
     <>
       <div className="w-full">
-        <LandingPage scrollDuration={videoScrollDuration} isMobile={isMobile} />
-        {/* This spacer div creates the scrollable area for the video */}
-        <div style={{ height: `${videoScrollDuration}px` }} />
+        {/* 표준 히어로: 스크롤하면 랜딩이 위로 밀려 올라가고 본문이 자연스럽게 이어짐 */}
+        <LandingPage isMobile={isMobile} />
         <HomePage />
       </div>
       {showAdmin && <AdminPanel onClose={() => { setShowAdmin(false); window.location.hash = ''; }} />}
