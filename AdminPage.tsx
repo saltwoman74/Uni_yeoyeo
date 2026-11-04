@@ -13,7 +13,6 @@ interface AdminConfig {
     bokKey: string;
     koreaEximKey: string;
     dataGoKrKey: string;
-    adminPassword: string;
 }
 
 export default function AdminPage({ onClose }: { onClose: () => void }) {
@@ -26,12 +25,11 @@ export default function AdminPage({ onClose }: { onClose: () => void }) {
         chatbotLink: 'https://yeoyeo-chatbot.vercel.app',
         imageCompareLink: 'https://yeoyeo-gallery-v2.vercel.app',
         newsLinks: [],
-        alphaVantageKey: import.meta.env.VITE_ALPHA_VANTAGE_KEY || '',
-        fredKey: import.meta.env.VITE_FRED_KEY || '',
-        bokKey: import.meta.env.VITE_BOK_KEY || '',
-        koreaEximKey: import.meta.env.VITE_KOREAEXIM_KEY || '',
-        dataGoKrKey: import.meta.env.VITE_DATA_GO_KR_KEY || '',
-        adminPassword: '1234'
+        alphaVantageKey: '',
+        fredKey: '',
+        bokKey: '',
+        koreaEximKey: '',
+        dataGoKrKey: ''
     });
 
     useEffect(() => {
@@ -42,13 +40,22 @@ export default function AdminPage({ onClose }: { onClose: () => void }) {
         }
     }, []);
 
-    const handleLogin = () => {
-        const storedPassword = config.adminPassword;
-        if (password === storedPassword) {
-            setIsAuthenticated(true);
-        } else {
-            alert('비밀번호가 올바르지 않습니다.');
+    // 관리자 PIN 확인은 서버에서만 수행 (ADMIN_PIN 환경변수)
+    const handleLogin = async () => {
+        try {
+            const res = await fetch('/api/admin-check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin: password }),
+            });
+            if (res.ok) {
+                setIsAuthenticated(true);
+                return;
+            }
+        } catch {
+            // 아래 공통 안내로 처리
         }
+        alert('비밀번호가 올바르지 않습니다.');
     };
 
     const handleSave = () => {
@@ -203,21 +210,6 @@ export default function AdminPage({ onClose }: { onClose: () => void }) {
                                     className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm font-mono"
                                 />
                             </div>
-                        </div>
-                    </div>
-
-                    {/* 비밀번호 관리 */}
-                    <div>
-                        <h3 className="text-lg font-bold mb-4">🔐 비밀번호 관리</h3>
-                        <div>
-                            <label className="block text-sm font-medium text-zinc-700 mb-1">새 비밀번호</label>
-                            <input
-                                type="password"
-                                value={config.adminPassword}
-                                onChange={(e) => setConfig({ ...config, adminPassword: e.target.value })}
-                                className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm"
-                                placeholder="새 비밀번호를 입력하세요"
-                            />
                         </div>
                     </div>
                 </div>

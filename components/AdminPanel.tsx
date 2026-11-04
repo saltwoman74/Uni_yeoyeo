@@ -10,14 +10,24 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState<'listings' | 'market' | 'news'>('listings');
 
-    const handleLogin = (e: React.FormEvent) => {
+    // 관리자 PIN 확인은 서버에서만 수행 (ADMIN_PIN 환경변수)
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (password === '1234') {
-            setIsAuthenticated(true);
-            setError('');
-        } else {
-            setError('비밀번호가 올바르지 않습니다.');
+        try {
+            const res = await fetch('/api/admin-check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin: password }),
+            });
+            if (res.ok) {
+                setIsAuthenticated(true);
+                setError('');
+                return;
+            }
+        } catch {
+            // 아래 공통 안내로 처리
         }
+        setError('비밀번호가 올바르지 않습니다.');
     };
 
     const handleLogout = () => {
@@ -61,13 +71,6 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                             로그인
                         </button>
                     </form>
-
-                    <div className="mt-6 p-4 bg-zinc-50 rounded-lg">
-                        <p className="text-xs text-zinc-600">
-                            <strong>초기 비밀번호:</strong> 1234<br />
-                            보안을 위해 비밀번호를 변경하시기 바랍니다.
-                        </p>
-                    </div>
                 </div>
             </div>
         );
