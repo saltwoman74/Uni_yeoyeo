@@ -570,7 +570,7 @@ export default function HomePage() {
             <p className="mt-4 text-sm leading-6">
               대표: 박혜경 | TEL: 010-5016-3331<br />
               등록번호: 제48121-2023-00008호<br />
-              주소: 경상남도 창원시 의창구 중동로 59, 321동 1층 110호 (중동, 중동유니시티3단지)
+              주소: 경상남도 창원시 의창구 중동로 59, 유니시티3단지 상가내
             </p>
           </div>
           <div className="mt-12 pt-8 border-t border-zinc-700 text-center text-xs">

@@ -56,7 +56,7 @@ export default function MapComponent({ className = '' }: MapComponentProps) {
           <div style="padding: 15px; min-width: 200px;">
             <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">여여부동산중개사무소</h3>
             <p style="margin: 0; font-size: 13px; color: #666;">창원시 의창구 중동로 59</p>
-            <p style="margin: 4px 0 0 0; font-size: 13px; color: #666;">321동 1층 110호 (유니시티 3단지 상가)</p>
+            <p style="margin: 4px 0 0 0; font-size: 13px; color: #666;">유니시티3단지 상가내</p>
             <a href="tel:010-5016-3331" style="display: inline-block; margin-top: 8px; color: #0F172A; font-weight: bold; text-decoration: none;">
               📞 010-5016-3331
             </a>
